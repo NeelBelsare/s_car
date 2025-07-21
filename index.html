@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Car Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left stop right"
+                ". down .";
+            gap: 15px;
+            margin-top: 20px;
+            width: 250px; /* Adjust as needed */
+            margin: 0 auto;
+        }
+        button {
+            padding: 15px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #startButton {
+            background-color: #007bff;
+            color: white;
+            grid-area: start; /* New button placement */
+            margin-bottom: 20px;
+        }
+        #startButton:hover {
+            background-color: #0056b3;
+        }
+
+        #forwardButton {
+            background-color: #28a745;
+            color: white;
+            grid-area: up;
+        }
+        #forwardButton:hover {
+            background-color: #218838;
+        }
+        #backwardButton {
+            background-color: #dc3545;
+            color: white;
+            grid-area: down;
+        }
+        #backwardButton:hover {
+            background-color: #c82333;
+        }
+        #leftButton {
+            background-color: #ffc107;
+            color: #333;
+            grid-area: left;
+        }
+        #leftButton:hover {
+            background-color: #e0a800;
+        }
+        #rightButton {
+            background-color: #17a2b8;
+            color: white;
+            grid-area: right;
+        }
+        #rightButton:hover {
+            background-color: #138496;
+        }
+        #stopButton {
+            background-color: #6c757d;
+            color: white;
+            grid-area: stop;
+        }
+        #stopButton:hover {
+            background-color: #5a6268;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ESP32 Car Control</h1>
+        <button id="startButton">Connect & Start 🔗</button>
+        <p id="status">Ready to connect...</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <button id="forwardButton">Forward ⬆️</button>
+            <button id="leftButton">Left ⬅️</button>
+            <button id="stopButton">Stop ⏹️</button>
+            <button id="rightButton">Right ➡️</button>
+            <button id="backwardButton">Backward ⬇️</button>
+        </div>
+    </div>
+
+    <script>
+        const backendUrl = "YOUR_RENDER_BACKEND_URL"; // e.g., "https://your-render-app.onrender.com"
+
+        const startButton = document.getElementById('startButton');
+        const forwardButton = document.getElementById('forwardButton');
+        const backwardButton = document.getElementById('backwardButton');
+        const leftButton = document.getElementById('leftButton');
+        const rightButton = document.getElementById('rightButton');
+        const stopButton = document.getElementById('stopButton');
+        const statusElement = document.getElementById('status');
+
+        // Function to send command to backend
+        async function sendCommand(command) {
+            statusElement.textContent = `Sending '${command}' command...`;
+            try {
+                const response = await fetch(`${backendUrl}/send-command`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ command: command })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    statusElement.textContent = `Command sent: ${data.message}`;
+                    if (command === "start_connection_blink") {
+                        statusElement.textContent += " (ESP32 LED should blink 3 times)";
+                    }
+                } else {
+                    statusElement.textContent = `Error: ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                statusElement.textContent = `Failed to send command: ${error.message}`;
+            }
+        }
+
+        // Event Listeners for buttons
+        startButton.addEventListener('click', () => sendCommand('start_connection_blink'));
+        forwardButton.addEventListener('mousedown', () => sendCommand('forward'));
+        forwardButton.addEventListener('mouseup', () => sendCommand('stop'));
+        backwardButton.addEventListener('mousedown', () => sendCommand('backward'));
+        backwardButton.addEventListener('mouseup', () => sendCommand('stop'));
+        leftButton.addEventListener('mousedown', () => sendCommand('left'));
+        leftButton.addEventListener('mouseup', () => sendCommand('stop'));
+        rightButton.addEventListener('mousedown', () => sendCommand('right'));
+        rightButton.addEventListener('mouseup', () => sendCommand('stop'));
+        stopButton.addEventListener('click', () => sendCommand('stop'));
+
+        // For touch devices (optional, for better mobile experience)
+        forwardButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('forward'); });
+        forwardButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
+        backwardButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('backward'); });
+        backwardButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
+        leftButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('left'); });
+        leftButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
+        rightButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('right'); });
+        rightButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
+    </script>
+</body>
+</html>
