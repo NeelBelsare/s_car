@@ -53,11 +53,21 @@
         #startButton {
             background-color: #007bff;
             color: white;
-            grid-area: start; /* New button placement */
+            grid-area: start;
             margin-bottom: 20px;
         }
         #startButton:hover {
             background-color: #0056b3;
+        }
+
+        #honkButton { /* New style for honk button */
+            background-color: #ff9800; /* Orange color */
+            color: white;
+            margin-top: 20px;
+            padding: 15px 50px; /* Make it wider */
+        }
+        #honkButton:hover {
+            background-color: #fb8c00;
         }
 
         #forwardButton {
@@ -122,10 +132,10 @@
             <button id="rightButton">Right ➡️</button>
             <button id="backwardButton">Backward ⬇️</button>
         </div>
-    </div>
+        <button id="honkButton">Honk 📢</button> </div>
 
     <script>
-        const backendUrl = "https://s-car.onrender.com"; // e.g., "https://your-render-app.onrender.com"
+        const backendUrl = "https://s-car.onrender.com"; // Your Render backend URL
 
         const startButton = document.getElementById('startButton');
         const forwardButton = document.getElementById('forwardButton');
@@ -133,9 +143,9 @@
         const leftButton = document.getElementById('leftButton');
         const rightButton = document.getElementById('rightButton');
         const stopButton = document.getElementById('stopButton');
+        const honkButton = document.getElementById('honkButton'); // New: Get honk button element
         const statusElement = document.getElementById('status');
 
-        // Function to send command to backend
         async function sendCommand(command) {
             statusElement.textContent = `Sending '${command}' command...`;
             try {
@@ -152,6 +162,8 @@
                     statusElement.textContent = `Command sent: ${data.message}`;
                     if (command === "start_connection_blink") {
                         statusElement.textContent += " (ESP32 LED should blink 3 times)";
+                    } else if (command === "honk") { // New: Add status for honk
+                        statusElement.textContent += " (Buzzer should sound)";
                     }
                 } else {
                     statusElement.textContent = `Error: ${data.message}`;
@@ -173,8 +185,9 @@
         rightButton.addEventListener('mousedown', () => sendCommand('right'));
         rightButton.addEventListener('mouseup', () => sendCommand('stop'));
         stopButton.addEventListener('click', () => sendCommand('stop'));
+        honkButton.addEventListener('click', () => sendCommand('honk')); // New: Honk button event listener
 
-        // For touch devices (optional, for better mobile experience)
+        // For touch devices
         forwardButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('forward'); });
         forwardButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
         backwardButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('backward'); });
@@ -183,6 +196,8 @@
         leftButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
         rightButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('right'); });
         rightButton.addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('stop'); });
+        // New: Touch events for honk button if needed (click works for most touch devices too)
+        // honkButton.addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('honk'); });
     </script>
 </body>
 </html>
